@@ -6,13 +6,16 @@ public class LobbyGenerator : MonoBehaviour
 {
     public GameObject lobby;
     public List<GameObject> doors;
+    public GameObject inputDoor;
     private int randomIdx;
+    // private Door door;
     private Transform lobbyTransform;
 
-    private void Start()
+    private void Awake()
     {
         SetRandomNumber();
         SetLobby(randomIdx);
+        SetDoor(doors[randomIdx]);
     }
 
     private void SetRandomNumber()
@@ -51,5 +54,15 @@ public class LobbyGenerator : MonoBehaviour
             default:
                 return;
         }
+    }
+
+    private void SetDoor(GameObject _door)
+    {
+        inputDoor = _door;
+    }
+
+    public GameObject GetDoor()
+    { 
+        return inputDoor;
     }
 }
