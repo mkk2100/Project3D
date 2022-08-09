@@ -41,7 +41,7 @@ namespace PlayerSpace
         {
             if (Input.GetKey(KeyCode.Space))
             {
-                if(pressJump == false) entityPlayer.Jump();
+                entityPlayer.Jump();
                 pressJump = true;
             }
             else
