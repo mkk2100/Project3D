@@ -10,8 +10,7 @@ namespace PlayerSpace
     {
         Entity_Player entityPlayer;
 
-        private Vector2 movingInput;
-        private bool pressJump;
+        private Vector2 movingInput;        
 
         private void Start()
         {
@@ -39,13 +38,7 @@ namespace PlayerSpace
         // 점프 조작
         private void InputJump()
         {
-            if (Input.GetKey(KeyCode.Space))
-            {
-                entityPlayer.Jump();
-                pressJump = true;
-            }
-            else
-                pressJump = false;
+            if (Input.GetKey(KeyCode.Space)) entityPlayer.Jump();
         }
     }
 }

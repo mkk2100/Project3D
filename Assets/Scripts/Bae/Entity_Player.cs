@@ -7,19 +7,33 @@ using UnityEngine;
 // 플레이어의 행동 스크립트
 public class Entity_Player : Entity_Base
 {
+    public static Entity_Player entity_Player;
+
     Animator animator;
     Rigidbody rigidbody;
-
+    CapsuleCollider capColi;
     protected float angle;
     protected float turnSpeed;
 
     private bool isGround;
     private void Awake()
     {
+        if(entity_Player == null)
+        {
+            entity_Player = this;
+        }
+        else
+        {
+            Destroy(this);
+            return;
+        }
+        
+
         turnSpeed = 10;
         entityStatus = new Entity_Status(3, 1, 3, 300);
         animator = GetComponent<Animator>();
         rigidbody = GetComponent<Rigidbody>();
+        capColi = GetComponent<CapsuleCollider>();
     }
 
     // 인자로 아무것도 넘기지 않으면 스테이터스 상의 이동속도로 이동
@@ -62,20 +76,41 @@ public class Entity_Player : Entity_Base
 
     public override void Jump(float _jumpForce)
     {
-        RaycastHit hit;
-        Debug.DrawRay(transform.position, Vector3.down * 0.2f, Color.red);
-        Debug.Log("CallJump");
+        if (isGround == true)
+        {
+            Debug.Log("Jump!");
+            rigidbody.velocity = new Vector2(rigidbody.velocity.x, 0);
+            rigidbody.velocity = Vector3.zero;
+            rigidbody.AddForce(Vector3.up * _jumpForce);
+        }
 
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 0.2f))
+    }
+
+    private void GroundCheck()
+    {
+        RaycastHit hit;
+        Debug.DrawRay(transform.position, Vector3.down * ((capColi.bounds.size.y / 2) - capColi.bounds.center.y + 0.5f), Color.red);
+
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, (capColi.bounds.size.y / 2) - capColi.bounds.center.y + 0.5f) && rigidbody.velocity.y <= 0)
         {
             if (hit.transform.CompareTag("Ground")) isGround = true;
             else isGround = false;
+            Debug.Log("Checking...");
         }
         else isGround = false;
 
-        if (isGround == true && rigidbody.velocity.y <= 0)
+    }
+    private void OnCollisionStay(Collision collision)
+    {
+        if(collision.collider.CompareTag("Ground"))
         {
-            rigidbody.AddForce(Vector3.up * _jumpForce);
+            GroundCheck();
         }
     }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        isGround = false;
+    }
 }
+
