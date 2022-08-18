@@ -10,7 +10,7 @@ public class AudioManager : MonoBehaviour
 
     private AudioSource audioSource;
 
-    private void Start()
+    private void Awake()
     {
         Initialize();
         audioSource = GetComponent<AudioSource>();
@@ -31,6 +31,7 @@ public class AudioManager : MonoBehaviour
     {
         GameObject go = new GameObject(sfxName + "Sound");
         AudioSource _audioSource = go.AddComponent<AudioSource>();
+        _audioSource.clip = audioClip;
         _audioSource.Play();
         Destroy(go, audioClip.length);
     }

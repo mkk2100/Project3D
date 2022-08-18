@@ -12,6 +12,8 @@ public class TransitionManager : MonoBehaviour
     private void Start()
     {
         Initialize();
+        if(!hasEffect) return;
+        StartCoroutine(PlayScreenEffect());          
     }
 
     private void Initialize()
@@ -20,19 +22,13 @@ public class TransitionManager : MonoBehaviour
         canvasGroup.alpha = (hasEffect) ? 1.0f : 0.0f;
     }
 
-    private void Update()
-    {
-        if(!hasEffect) return;
-        StartCoroutine(PlayScreenEffect());  
-    }
-
     private IEnumerator PlayScreenEffect()
     {
         while(canvasGroup.alpha >= 0)
         {
             canvasGroup.alpha -= EFFECTDELAY;
 
-            yield return new WaitForSeconds(EFFECTDELAY * 10.0f);
+            yield return new WaitForSeconds(EFFECTDELAY * 0.1f);
         }
         yield return null;
     }

@@ -15,6 +15,4 @@ public class Title : MonoBehaviour
     public string startGameButtonText;
     public string exitGameButtonText;
     public string creditText;  
-
-
 }
