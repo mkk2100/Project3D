@@ -6,9 +6,8 @@ public class LobbyGenerator : MonoBehaviour
 {
     public GameObject lobby;
     public List<GameObject> doors;
-    public GameObject inputDoor;
+    private GameObject inputDoor;
     private int randomIdx;
-    // private Door door;
     private Transform lobbyTransform;
 
     private void Awake()

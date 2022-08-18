@@ -4,52 +4,49 @@ using UnityEngine;
 
 public class Door : MonoBehaviour
 {
-    public LobbyGenerator lobbyGenerator;
-    public Vector3 movePoint;
+    private LobbyGenerator lobbyGenerator;
+    private Vector3 movePoint;
+    private Vector3 defaultTargetPoint;
     private Vector3 targetPoint;
     public bool isOpen;
-    public int speed;
+    private int speed = 2;
 
-    private GameObject inputDoor;    
+    protected GameObject inputDoor;
 
-    private void Start()
+    protected void GetLobbyGenerator()
     {
-        SetDoor();
-        SetTargetPoint();
+        lobbyGenerator = FindObjectOfType<LobbyGenerator>();
     }
 
-    private void SetDoor()
+    protected void SetDoor()
     {
         inputDoor = lobbyGenerator.GetDoor();        
     }
 
-    private void SetTargetPoint()
+    protected void SetTargetPoint()
     {
-        targetPoint = inputDoor.transform.position + movePoint;
+        movePoint = new Vector3(0, 3.0f, 0);
+        defaultTargetPoint = inputDoor.transform.position;
+        targetPoint = inputDoor.transform.position + movePoint;   
     }
 
-    public void OpenDoor()
+    protected void OpenDoor()
     {
         isOpen = true;
     }
 
-    public void CloseDoor()
+    protected void CloseDoor()
     {
         isOpen = false;
     }
 
-    private void Update()
-    {
-        if(isOpen) MoveUpward();
-    }
-
-    private void MoveUpward()
+    protected void MoveUpward()
     {
         inputDoor.transform.position = Vector3.MoveTowards(inputDoor.transform.position, targetPoint, speed * Time.deltaTime);
     }
 
-    private void MoveDownward()
+    protected void MoveDownward()
     {
-
+        inputDoor.transform.position = Vector3.MoveTowards(inputDoor.transform.position, defaultTargetPoint, speed * Time.deltaTime);
     }
 }
