@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+using EntitySpace;
+
 public class DoorTrigger : Door
 {
     private void Start()

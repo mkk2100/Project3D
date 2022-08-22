@@ -42,6 +42,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4885079432260988}
   - component: {fileID: 95471671811264702}
+  - component: {fileID: 3329138370615036152}
+  - component: {fileID: 3230911458678814131}
   m_Layer: 0
   m_Name: Slime
   m_TagString: Untagged
@@ -84,6 +86,35 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &3329138370615036152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1090219386143568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e719254cceea103479f9c6aaaa5ab31c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entityStatus:
+    hp: 0
+    atk: 0
+    speed: 0
+    jumpForce: 0
+--- !u!114 &3230911458678814131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1090219386143568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37916b9cc0c90194a841f11fa961090a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1159745215084782
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,7 +4,7 @@ using UnityEngine;
 //Write by baejinseok
 
 // 플레이어 조작 스크립트
-namespace PlayerSpace
+namespace EntitySpace
 {
     public class Player_Controller : MonoBehaviour
     {
@@ -31,7 +31,7 @@ namespace PlayerSpace
             else
             {
                 entityPlayer.Move();
-                entityPlayer.Rotation(movingInput);
+                entityPlayer.Rotation(movingInput.x, movingInput.y);
             }
         }
 

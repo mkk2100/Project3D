@@ -10,7 +10,7 @@ public class Entity_Player : Entity_Base
     public static Entity_Player entity_Player;
 
     Animator animator;
-    new Rigidbody rigidbody;
+    Rigidbody rigidbody;
     CapsuleCollider capColi;
     protected float angle;
     protected float turnSpeed;
