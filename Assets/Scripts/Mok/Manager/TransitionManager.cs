@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class TransitionManager : MonoBehaviour
 {
-    public bool hasEffect;    
+    public bool hasEffect;
+    private bool isDoneEffect;   
     private CanvasGroup canvasGroup;
     private const float EFFECTDELAY = 0.01f;
 
@@ -24,12 +25,11 @@ public class TransitionManager : MonoBehaviour
 
     private IEnumerator PlayScreenEffect()
     {
-        while(canvasGroup.alpha >= 0)
+        while(canvasGroup.alpha > 0)
         {
             canvasGroup.alpha -= EFFECTDELAY;
-
-            yield return new WaitForSeconds(EFFECTDELAY * 0.1f);
+            yield return new WaitForEndOfFrame();
         }
-        yield return null;
+        this.gameObject.SetActive(false);
     }
 }
