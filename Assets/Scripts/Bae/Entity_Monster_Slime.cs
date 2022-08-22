@@ -1,15 +1,14 @@
-//Write by Baejinseok
+// Written by Baejinseok
 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// 플레이어 관련 스크립트
 namespace EntitySpace
 {
-    public class Entity_Player : Entity_Base
+    public class Entity_Monster_Slime : Entity_Monster
     {
-        public static Entity_Player entity_Player;
+        private Entity_Player entity_Player;
 
         Animator animator;
         Rigidbody rigidbody;
@@ -20,39 +19,27 @@ namespace EntitySpace
         private bool isGround;
         private void Awake()
         {
-            if (entity_Player == null)
-            {
-                entity_Player = this;
-            }
-            else
-            {
-                Destroy(this);
-                return;
-            }
-
             turnSpeed = 10;
-            entityStatus = new Entity_Status(3, 1, 3, 300);
+            entityStatus = new Entity_Status(10, 1, 1, 100);
             animator = GetComponent<Animator>();
             rigidbody = GetComponent<Rigidbody>();
             capColi = GetComponent<CapsuleCollider>();
         }
 
-        // ??? ??????
         public override bool Move(float _speed)
         {
-            if (_speed == 0.0f) // ????? 0?? ?????? ??????? ??????? False ????
+            if (_speed == 0.0f)
             {
-                animator.SetBool("isWalking", false);    // ??? ??????? ??? ??
+                animator.SetBool("isWalking", false);
                 return false;
             }
 
             transform.position += transform.forward * _speed * Time.deltaTime;
-            animator.SetBool("isWalking", true);    // ??? ??????? ??? ??
+            animator.SetBool("isWalking", true);
 
             return true;
         }
 
-        // ?????? + ??? (?? ????? ???? ?????? ??? ??? ??? ????)
         public override bool Rotation(float _x, float _z)
         {
             angle = Mathf.Atan2(_x, _z);
@@ -63,7 +50,6 @@ namespace EntitySpace
 
             return true;
         }
-
         public override void Jump(float _jumpForce)
         {
             if (isGround == true)
@@ -74,8 +60,11 @@ namespace EntitySpace
             }
 
         }
+
         public override bool Attack(float _atk)
         {
+            // 공격할거 추가
+            Debug.Log("공격");
             return true;
         }
         private void GroundCheck()
@@ -104,6 +93,5 @@ namespace EntitySpace
             isGround = false;
         }
     }
-
 
 }
