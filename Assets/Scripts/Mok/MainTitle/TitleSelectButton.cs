@@ -15,50 +15,39 @@ public class TitleSelectButton : MonoBehaviour
 
     public GameObject[] buttons;
     public RectTransform[] buttonRects;
-    private float desiredDuration = 0.2f;
+    private float desiredDuration = 0.1f;
     private float elapsedTime;
     private float percentageComplete;
 
     private int idx = 0;
-    private void OnEnable()
+
+    private void Start()
     {
         EventSystem.current.SetSelectedGameObject(buttons[0]);
-        // buttonRects = GetComponentsInChildren<RectTransform>(true);
-        // startPos = buttonRects[0].anchoredPosition3D;
-        // Debug.Log(startPos);
     }
-    void Update()
+
+    private void Update()
     {
         if(Input.GetAxisRaw("Horizontal") != 0  && !isArrowKeyPressed)
         {
             isArrowKeyPressed = true;
-            // endPos = startPos + new Vector3(1280 * Input.GetAxisRaw("Horizontal"),0,0);
+            EventSystem.current.SetSelectedGameObject(null);
             movePos = new Vector3(1280 * Input.GetAxisRaw("Horizontal"),80,0);
-            // Debug.Log(movePos);
             StartCoroutine(SlidingMoveEffect());
+            AudioManager.instance.SFXPlay("Select ", AudioManager.instance.SFXLibrary[1]);
         }
     }
-
-    // protected void SwitchButton(int idx)
-    // {
-    //     // for(int i = 0; i < transform.childCount; i++) buttons[i].SetActive(i == idx);
-
-    // }
 
     private IEnumerator SlidingMoveEffect()
     {
         int inputDir = (int) Input.GetAxisRaw("Horizontal");
 
         Vector3 temp = buttonRects[idx].anchoredPosition3D;
-        EventSystem.current.SetSelectedGameObject(null);
         while(percentageComplete <= 1.0f)
         {
             elapsedTime += Time.deltaTime;
             percentageComplete = elapsedTime / desiredDuration;
             buttonRects[idx].anchoredPosition3D = Vector3.Lerp(new Vector3(0, 80, 0), movePos, percentageComplete);
-            
-            // Debug.Log(temp);
-            //buttonRects[idx].anchoredPosition3D = Vector3.Lerp(startPos, endPos, percentageComplete);
             yield return new WaitForEndOfFrame();
         }
         buttons[idx].SetActive(false);
@@ -66,7 +55,6 @@ public class TitleSelectButton : MonoBehaviour
         if(idx < 0) idx = buttons.Length -1;
         else if(idx == buttons.Length) idx = 0;
         buttons[idx].SetActive(true);
-        
         percentageComplete = 0.0f;
         elapsedTime = 0.0f;
         temp = buttonRects[idx].anchoredPosition3D;
@@ -74,16 +62,25 @@ public class TitleSelectButton : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             percentageComplete = elapsedTime / desiredDuration;
-            
             buttonRects[idx].anchoredPosition3D = Vector3.Lerp(new Vector3(movePos.x * -1, movePos.y, movePos.z), new Vector3(0, 80, 0) , percentageComplete);
-            
-            //buttonRects[idx].anchoredPosition3D = Vector3.Lerp(startPos, endPos, percentageComplete);
             yield return new WaitForEndOfFrame();
         }
-        
         percentageComplete = 0.0f;
         elapsedTime = 0.0f;
         EventSystem.current.SetSelectedGameObject(buttons[idx]);
         isArrowKeyPressed = false;
+    }
+
+    // For Button
+    public void StartGameButton()
+    {
+        EventSystem.current.SetSelectedGameObject(null);
+        AudioManager.instance.SFXPlay("Start ", AudioManager.instance.SFXLibrary[0]);        
+    }
+    
+    // For Button
+    public void ExitGameButton()
+    {
+        AudioManager.instance.SFXPlay("Exit ", AudioManager.instance.SFXLibrary[2]);
     }
 }

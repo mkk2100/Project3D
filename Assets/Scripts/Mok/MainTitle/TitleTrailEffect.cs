@@ -4,32 +4,45 @@ using UnityEngine;
 
 public class TitleTrailEffect : MonoBehaviour
 {
-    private Vector2 startPos, endPos;
     private bool isMoved;
 
     private float desiredDuration = 0.3f;
     private float elapsedTime;
     private float percentageComplete;
+    private RectTransform rectTransform;
 
-    private void Start()
+    public Vector2 startPos;
+    public Vector2 endPos;
+    public bool isUI;
+
+    private void OnEnable()
     {
         SetPosition();
     }
 
     private void SetPosition()
     {
-        startPos = new Vector2(12, -4);
-        endPos = new Vector2(-20, -4);
+        if(!isUI)
         this.transform.position = startPos;
+        else
+        {
+            rectTransform = GetComponent<RectTransform>();
+            rectTransform.anchoredPosition3D = startPos;
+        }
+
     }
 
     private void Update()
     {
+        if (isUI && !isMoved) StartCoroutine(Move2());
         if(!Input.GetKeyDown(KeyCode.Return)) return;
-        if(!isMoved) StartCoroutine(Move());
+        if(!isUI && !isMoved)
+        {
+            StartCoroutine(Move1());        
+        }
     }
 
-    IEnumerator Move()
+    IEnumerator Move1()
     {
         while(percentageComplete <= 1.0f)
         {
@@ -38,5 +51,18 @@ public class TitleTrailEffect : MonoBehaviour
             transform.position = Vector3.Lerp(startPos, endPos, percentageComplete);
             yield return new WaitForEndOfFrame();
         }
+        isMoved = true;
     }
+    IEnumerator Move2()
+    {
+        while(percentageComplete <= 1.0f)
+        {
+            elapsedTime += Time.deltaTime;
+            percentageComplete = elapsedTime / desiredDuration;
+            rectTransform.anchoredPosition3D = Vector3.Lerp(startPos, endPos, percentageComplete);
+            yield return new WaitForEndOfFrame();
+        }
+        isMoved = true;
+    }    
+    
 }
