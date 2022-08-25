@@ -4,14 +4,14 @@ using UnityEngine;
 
 //Write by baejinseok
 
-// ÇÃ·¹ÀÌ¾î, ¸ó½ºÅÍ µî ¿£ÅÍÆ¼µéÀÇ Çàµ¿¿¡ ´ëÇÑ º£ÀÌ½º ½ºÅ©¸³Æ®
+// í”Œë ˆì´ì–´, ëª¬ìŠ¤í„° ë“± ì—”í„°í‹°ë“¤ì˜ í–‰ë™ì— ëŒ€í•œ ë² ì´ìŠ¤ ìŠ¤í¬ë¦½íŠ¸
 
 namespace EntitySpace
 {
     public abstract class Entity_Base : MonoBehaviour
     {
         [SerializeField]
-        protected Entity_Status entityStatus;
+        public Entity_Status entityStatus;
 
         public bool Move()
         {
@@ -21,9 +21,9 @@ namespace EntitySpace
         public abstract bool Rotation(float _x, float _z);
         public bool Jump()
         {
-            return Move(entityStatus.JumpForce);
+            return Jump(entityStatus.JumpForce);
         }
-        public abstract void Jump(float _jumpForce);
+        public abstract bool Jump(float _jumpForce);
 
         public bool Attack()
         {
@@ -31,7 +31,12 @@ namespace EntitySpace
         }
         public abstract bool Attack(float _atk);
 
-        
+        public virtual bool Destroyed()
+        {
+            Destroy(this.gameObject);
+            return true;
+        }
+        public abstract float Damaged(float _damage);
     }
 
 }

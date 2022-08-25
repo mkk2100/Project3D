@@ -10,8 +10,8 @@ namespace EntitySpace
     {
         public override bool Move(float _speed) { return false; }
         public override bool Rotation(float _x, float _z) { return false; }
-        public override void Jump(float _jumpForce) { }
-
+        public override bool Jump(float _jumpForce) { return false; }
+        public override float Damaged(float _damage) { return 0; }
         public override bool Attack(float _atk) { return false; }
     }
 

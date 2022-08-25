@@ -9,17 +9,24 @@ namespace EntitySpace
     public class Player_Controller : MonoBehaviour
     {
         Entity_Player entityPlayer;
+        Entity_Status entity_Status;
+        private Vector2 movingInput;
+        protected float attackCool = 1.0f;
+        [SerializeField]
+        protected float attackCurr = 1.0f;
+        
 
-        private Vector2 movingInput;        
 
         private void Start()
         {
             entityPlayer = GetComponent<Entity_Player>();
+            entity_Status = entityPlayer.entityStatus;
         }
         void FixedUpdate()
         {
             InputMove();
             InputJump();
+            InputAttack();
         }
         // 플레이어 입력 설정
         private void InputMove()
@@ -40,5 +47,21 @@ namespace EntitySpace
         {
             if (Input.GetKey(KeyCode.Space)) entityPlayer.Jump();
         }
+
+        private void InputAttack()
+        {
+
+            if (Input.GetButton("Fire1") && attackCurr >= attackCool)
+            {
+                Debug.Log("AttackButton");
+                bool attackChk = entityPlayer.Attack();
+                attackCurr = 0.0f;
+            }
+            if (attackCurr <= attackCool)
+            {
+                attackCurr += Time.deltaTime;
+            }
+        }
     }
 }
+

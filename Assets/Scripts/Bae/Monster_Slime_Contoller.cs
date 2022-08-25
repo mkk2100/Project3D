@@ -11,7 +11,11 @@ namespace EntitySpace
         Entity_Player entity_Player;
         Entity_Monster_Slime myEntity;
 
-        
+        protected float attackCool = 1.0f;
+        [SerializeField]
+        protected float attackCurr = 1.0f;
+
+
         float xDir;
         float zDir;
         float attackDist = 1.0f;
@@ -19,17 +23,23 @@ namespace EntitySpace
         float detectDist = 8.0f;
         float detectMinus = 25.0f;
 
-        
         bool findPlayer = false;
 
         private void Awake()
         {
             myEntity = GetComponent<Entity_Monster_Slime>();
         }
-        
         void Update()
         {
-            myEntity.Move();
+            if (myEntity.isDead == true) return;
+            
+            if (attackCurr <= attackCool)
+            {
+                attackCurr += Time.deltaTime;
+            }
+
+            if (entity_Player == null) myEntity.Move(0.1f);
+            else myEntity.Move();
             myEntity.Rotation(xDir, zDir);
 
             if (DebugMod == true) GetDebug();
@@ -46,7 +56,7 @@ namespace EntitySpace
         }
 
         float waitRandomMove;
-        //«√∑π¿ÃæÓ πﬂ∞ﬂ ∏¯¡ô¿ª∂ß æ∆π´ πÊ«‚¿∏∑Œ≥™ ¿Ãµø«‘
+        //ÌîåÎ†àÏù¥Ïñ¥ Î∞úÍ≤¨ Î™ªÌóÄÏùÑÎïå ÏïÑÎ¨¥ Î∞©Ìñ•ÏúºÎ°úÎÇò Ïù¥ÎèôÌï®
         bool RandomMove()
         {
             if (waitRandomMove > 0)
@@ -68,7 +78,7 @@ namespace EntitySpace
             waitRandomMove = Random.Range(1.5f, 5.0f);
             return true;
         }
-        // «√∑π¿ÃæÓ∏¶ πﬂ∞ﬂ»ƒ √ﬂ¿˚ π◊ ∞¯∞›
+        // ÌîåÎ†àÏù¥Ïñ¥Î•º Î∞úÍ≤¨ÌõÑ Ï∂îÏ†Å Î∞è Í≥µÍ≤©
         bool TracePlayer()
         {
             if (entity_Player == null || findPlayer == false)
@@ -94,7 +104,7 @@ namespace EntitySpace
 
         }
 
-        // «√∑π¿ÃæÓ∏¶ ∞®¡ˆ
+        // ÌîåÎ†àÏù¥Ïñ¥Î•º Í∞êÏßÄ
         private bool FindPlayer(float _dist, float _degreeMinus)
         {
             Collider[] colls;
@@ -104,7 +114,6 @@ namespace EntitySpace
                 if (co.gameObject.CompareTag("Player"))
                 {
                     float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    Debug.Log(dot);
                     dot -= Mathf.Deg2Rad * _degreeMinus;
                     if (dot > 0)
                     {
@@ -117,10 +126,10 @@ namespace EntitySpace
         }
         bool Attack() 
         {
-            Debug.Log("ΩΩ∂Û¿”¿« ∞¯∞›!");
-            return true;
+            if (attackCurr <= attackCool) return false;
+            return myEntity.Attack();
         }
-        // æ¿»≠∏Èø°º≠ ∫∏¿Ã¥¬ ±‚¡Ó∏ µπˆ±ÎøÎ, ¿ŒΩ∫∆Â≈Õø°º≠ µπˆ±◊∏µÂ bool ƒ—æﬂ ∫∏¿”
+        // Ïî¨ÌôîÎ©¥ÏóêÏÑú Î≥¥Ïù¥Îäî Í∏∞Ï¶àÎ™® ÎîîÎ≤ÑÍπÖÏö©, Ïù∏Ïä§ÌéôÌÑ∞ÏóêÏÑú ÎîîÎ≤ÑÍ∑∏Î™®Îìú bool ÏºúÏïº Î≥¥ÏûÑ
         [SerializeField]
         private bool DebugMod;
         private bool debugFound;
@@ -160,7 +169,7 @@ namespace EntitySpace
 
         }
         
-        // ±‚¡Ó∏ ±◊∏Æ±‚
+        // Í∏∞Ï¶àÎ™® Í∑∏Î¶¨Í∏∞
         private void OnDrawGizmos()
         {
             if (DebugMod == false) return;

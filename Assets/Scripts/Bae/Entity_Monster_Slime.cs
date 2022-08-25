@@ -15,12 +15,14 @@ namespace EntitySpace
         CapsuleCollider capColi;
         protected float angle;
         protected float turnSpeed;
+        protected Vector3 attackArea = new Vector3(1.0f, 1.0f, 1.0f);
 
         private bool isGround;
+        public bool isDead;
         private void Awake()
         {
             turnSpeed = 10;
-            entityStatus = new Entity_Status(10, 1, 1, 100);
+            entityStatus = new Entity_Status(3, 1, 0.25f, 100);
             animator = GetComponent<Animator>();
             rigidbody = GetComponent<Rigidbody>();
             capColi = GetComponent<CapsuleCollider>();
@@ -30,12 +32,11 @@ namespace EntitySpace
         {
             if (_speed == 0.0f)
             {
-                animator.SetBool("isWalking", false);
+                //animator.SetBool("isWalking", false);
                 return false;
             }
-
             transform.position += transform.forward * _speed * Time.deltaTime;
-            animator.SetBool("isWalking", true);
+            //animator.SetBool("isWalking", true);
 
             return true;
         }
@@ -50,23 +51,36 @@ namespace EntitySpace
 
             return true;
         }
-        public override void Jump(float _jumpForce)
+        public override bool Jump(float _jumpForce)
         {
             if (isGround == true)
             {
                 rigidbody.velocity = new Vector2(rigidbody.velocity.x, 0);
                 rigidbody.velocity = Vector3.zero;
                 rigidbody.AddForce(Vector3.up * _jumpForce);
-            }
 
+                return true;
+            }
+            return false;
         }
+
 
         public override bool Attack(float _atk)
         {
-            // 공격할거 추가
-            Debug.Log("공격");
-            return true;
+            Collider[] colls = Physics.OverlapBox(new Vector3(transform.position.x + (attackArea.z / 2) * Mathf.Sin(this.transform.eulerAngles.y * Mathf.Deg2Rad), transform.position.y, this.transform.position.z + (attackArea.z / 2) * Mathf.Cos(this.transform.eulerAngles.y * Mathf.Deg2Rad)), attackArea / 2, this.transform.rotation, LayerMask.GetMask("Player"), QueryTriggerInteraction.UseGlobal);
+            if (colls.Length > 0)
+            {
+                foreach (Collider co in colls)
+                {
+                    float enemyHp = co.GetComponent<Entity_Player>().Damaged(entityStatus.Atk);
+                    Debug.Log(enemyHp);
+                }
+                return true;
+            }
+            Debug.Log("Target Lost");
+            return false;
         }
+
         private void GroundCheck()
         {
             RaycastHit hit;
@@ -78,8 +92,25 @@ namespace EntitySpace
                 else isGround = false;
             }
             else isGround = false;
-
         }
+        public override float Damaged(float _damage)
+        {
+            entityStatus.Hp -= _damage;
+            if (entityStatus.Hp <= 0)
+            {
+                Destroyed();
+                return 0.0f;
+            }
+            else return entityStatus.Hp;
+        }
+
+        public override bool Destroyed()
+        {
+            isDead = true;
+            Destroy(gameObject);
+            return true;
+        }
+
         private void OnCollisionStay(Collision collision)
         {
             if (collision.collider.CompareTag("Ground"))
@@ -92,6 +123,12 @@ namespace EntitySpace
         {
             isGround = false;
         }
+        private void OnDrawGizmos()
+        {
+            Gizmos.matrix = Matrix4x4.TRS(new Vector3(transform.position.x + (attackArea.z / 2) * Mathf.Sin(this.transform.eulerAngles.y * Mathf.Deg2Rad), transform.position.y, this.transform.position.z + (attackArea.z / 2) * Mathf.Cos(this.transform.eulerAngles.y * Mathf.Deg2Rad)), transform.rotation, transform.lossyScale);
+            Gizmos.DrawWireCube(Vector3.zero, attackArea);
+        }
     }
+        
 
 }
