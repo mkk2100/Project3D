@@ -23,5 +23,6 @@ public class TitleInput : MonoBehaviour
         pressEnterToStart.SetActive(false);
         hasPressedEnterKey = false;
         TitleMenu.titleState = TitleState.SelectButtonState;
+        AudioManager.instance.SFXPlay("Start ", AudioManager.instance.SFXLibrary[0]);
     }
 }
