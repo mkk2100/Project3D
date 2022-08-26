@@ -35,6 +35,7 @@ namespace EntitySpace
                 Destroy(this);
                 return;
             }
+            
             turnSpeed = 10;
             entityStatus = new Entity_Status(3, 1.5f, 3, 300);
             animator = GetComponent<Animator>();
@@ -50,7 +51,7 @@ namespace EntitySpace
         // ??? ??????
         public override bool Move(float _speed)
         {
-            if (_speed == 0.0f) // 0À» Àü´Ş¹Ş¾ÒÀ¸¸é ¾Ö´Ï¸ŞÀÌ¼Ç ²ô°í ÀÌµ¿ X
+            if (_speed == 0.0f) // 0ì„ ì „ë‹¬ë°›ì•˜ìœ¼ë©´ ì• ë‹ˆë©”ì´ì…˜ ë„ê³  ì´ë™ X
             {
                 animator.SetBool("isWalking", false);
                 return false;
@@ -71,11 +72,10 @@ namespace EntitySpace
         }
         public override bool Rotation(float _x, float _z)
         {
-            angle = Mathf.Atan2(_x, _z);
-            angle = Mathf.Rad2Deg * angle;
-
-            Quaternion targetRotation = Quaternion.Euler(0, angle, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+            angle = Mathf.Atan2(_x, _z);   
+            angle = (Mathf.Rad2Deg * angle);
+            Quaternion targetRotation = Quaternion.Euler(0, Camera.main.transform.rotation.eulerAngles.y + angle, 0);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation , turnSpeed * Time.deltaTime);
 
             return true;
         }

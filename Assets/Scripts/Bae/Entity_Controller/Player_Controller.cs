@@ -3,24 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 //Write by baejinseok
 
-// 플레이어 조작 스크립트
+/* 
+ * 플레이어 조작 스크립트
+ * 기본적으로 최대한 입력받고 수치를 entity 스크립트로 넘기는 역할만 하도록 하였음
+ */
 namespace EntitySpace
 {
     public class Player_Controller : MonoBehaviour
     {
         Entity_Player entityPlayer;
         Entity_Status entity_Status;
-        private Vector2 movingInput;
-        protected float attackCool = 1.0f;
-        [SerializeField]
-        protected float attackCurr = 1.0f;
         
-
-
         private void Start()
         {
             entityPlayer = GetComponent<Entity_Player>();
             entity_Status = entityPlayer.entityStatus;
+            attackCurr = attackCool;
         }
         void FixedUpdate()
         {
@@ -29,6 +27,8 @@ namespace EntitySpace
             InputAttack();
         }
         // 플레이어 입력 설정
+
+        private Vector2 movingInput; // 플레이어의 입력을 받아서 저장하는 변수
         private void InputMove()
         {
             movingInput.x = Input.GetAxisRaw("Horizontal");
@@ -48,6 +48,10 @@ namespace EntitySpace
             if (Input.GetKey(KeyCode.Space)) entityPlayer.Jump();
         }
 
+        // 공격 조작
+        [SerializeField]
+        protected float attackCool = 1.0f;
+        protected float attackCurr;
         private void InputAttack()
         {
 

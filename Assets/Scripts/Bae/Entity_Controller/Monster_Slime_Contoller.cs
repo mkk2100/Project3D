@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * 슬라임의 AI 스크립트, 어떤 행동을 할지 판단하여 entity 스크립트로 값을 넘기는 역할만 수행하도록 함. 실질적인 동작은 entity 스크립트에서 수행
+ */
+
 namespace EntitySpace
 {
     public class Monster_Slime_Contoller : MonoBehaviour
@@ -15,13 +19,9 @@ namespace EntitySpace
         [SerializeField]
         protected float attackCurr = 1.0f;
 
-
         float xDir;
         float zDir;
-        float attackDist = 1.0f;
-        float attackMinus = 25.0f;
-        float detectDist = 8.0f;
-        float detectMinus = 25.0f;
+
 
         bool findPlayer = false;
 
@@ -32,40 +32,51 @@ namespace EntitySpace
         void Update()
         {
             if (myEntity.isDead == true) return;
-            
-            if (attackCurr <= attackCool)
-            {
-                attackCurr += Time.deltaTime;
-            }
-
-            if (entity_Player == null) myEntity.Move(0.1f);
-            else myEntity.Move();
-            myEntity.Rotation(xDir, zDir);
 
             if (DebugMod == true) GetDebug();
+            
+            timer();
+            Action();
+        }
 
-            if (findPlayer == false)
+
+        //플레이어 발견 못헀을때 아무 방향으로나 이동함
+        float waitRandomMove; // 랜덤한 시간만큼 이동하도록 하는 float 변수
+
+        private void Action()
+        {
+            if (findPlayer == false && waitRandomMove <= 0)
             {
                 findPlayer = FindPlayer(detectDist, detectMinus);
                 RandomMove();
             }
-            else
+            else if (findPlayer == true)
             {
                 TracePlayer();
             }
+
+            if (entity_Player == null) myEntity.Move(0.1f);
+            else myEntity.Move();
+
+            myEntity.Rotation(xDir, zDir);
         }
 
-        float waitRandomMove;
-        //플레이어 발견 못헀을때 아무 방향으로나 이동함
-        bool RandomMove()
+        void timer()
         {
             if (waitRandomMove > 0)
             {
                 waitRandomMove -= Time.deltaTime;
-                return false;    
             }
 
-            if (Random.Range(0,2) == 0)
+            if (attackCurr <= attackCool)
+            {
+                attackCurr += Time.deltaTime;
+            }
+        }
+
+        void RandomMove()
+        {
+            if (Random.Range(0, 2) == 0)
             {
                 xDir = 0;
                 zDir = 0;
@@ -75,39 +86,19 @@ namespace EntitySpace
                 xDir = Random.Range(-1f, 1f);
                 zDir = Random.Range(-1f, 1f);
             }
-            waitRandomMove = Random.Range(1.5f, 5.0f);
-            return true;
-        }
-        // 플레이어를 발견후 추적 및 공격
-        bool TracePlayer()
-        {
-            if (entity_Player == null || findPlayer == false)
-            {
-                return false;
-            }
-
-            Vector3 tempVec = ((entity_Player.transform.position - this.transform.position).normalized);
-
-            xDir = tempVec.x;
-            zDir = tempVec.z;
-
-            if (FindPlayer(attackDist, attackMinus))
-            {
-                Attack();
-                return true;
-            }
-            else
-            {
-                myEntity.Move();
-                return true;
-            }
-
+            waitRandomMove = Random.Range(1.5f, 5.0f); 
         }
 
-        // 플레이어를 감지
+        float attackDist = 1.0f;
+        float attackMinus = 25.0f;
+        float detectDist = 8.0f;
+        float detectMinus = 25.0f;
+
+        // 플레이어를 감지, 처음 플레이어 추적, 공격거리 감지에 사용
         private bool FindPlayer(float _dist, float _degreeMinus)
         {
             Collider[] colls;
+
             colls = Physics.OverlapSphere(transform.position, _dist);
             foreach (Collider co in colls)
             {
@@ -124,11 +115,38 @@ namespace EntitySpace
             }
             return false;
         }
+
+        // 플레이어를 발견후 추적 및 공격
+
+        bool TracePlayer()
+        {
+            if (entity_Player == null || findPlayer == false)
+            {
+                return false;
+            }
+
+            Vector3 tempVec = ((entity_Player.transform.position - this.transform.position).normalized);
+
+            xDir = tempVec.x;
+            zDir = tempVec.z;
+                                
+            Attack();
+            myEntity.Move();
+            return true;
+
+        }
+
         bool Attack() 
         {
-            if (attackCurr <= attackCool) return false;
-            return myEntity.Attack();
+            if(myEntity.Attack() == true)
+            {
+                attackCurr = attackCool;
+                return true;
+            }
+
+            return false;
         }
+
         // 씬화면에서 보이는 기즈모 디버깅용, 인스펙터에서 디버그모드 bool 켜야 보임
         [SerializeField]
         private bool DebugMod;

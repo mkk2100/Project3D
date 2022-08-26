@@ -77,7 +77,6 @@ namespace EntitySpace
                 }
                 return true;
             }
-            Debug.Log("Target Lost");
             return false;
         }
 
