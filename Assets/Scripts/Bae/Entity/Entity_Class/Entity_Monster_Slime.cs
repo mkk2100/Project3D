@@ -72,7 +72,13 @@ namespace EntitySpace
             {
                 foreach (Collider co in colls)
                 {
-                    float enemyHp = co.GetComponent<Entity_Player>().Damaged(entityStatus.Atk);
+                    entity_Player = co.GetComponent<Entity_Player>();
+                    if (entity_Player.IsGuard())
+                    {
+                        Debug.Log(Vector3.Dot(entity_Player.transform.forward, this.transform.position));
+                        if (Vector3.Dot(entity_Player.transform.forward, this.transform.position) < 0) return false; // 가드중 정면타격시 데미지 안들어감
+                    }
+                    float enemyHp = entity_Player.Damaged(entityStatus.Atk);
                     Debug.Log(enemyHp);
                 }
                 return true;

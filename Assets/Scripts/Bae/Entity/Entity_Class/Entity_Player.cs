@@ -24,6 +24,7 @@ namespace EntitySpace
         [SerializeField]
         protected float invincibleCurr = 1.0f;
 
+        bool isGuard = false;
         private void Awake()
         {
             if (entity_Player == null)
@@ -51,6 +52,8 @@ namespace EntitySpace
         // ??? ??????
         public override bool Move(float _speed)
         {
+            if (isGuard == true) return false; // 가드중이면 이동불가
+
             if (_speed == 0.0f) // 0을 전달받았으면 애니메이션 끄고 이동 X
             {
                 animator.SetBool("isWalking", false);
@@ -91,6 +94,23 @@ namespace EntitySpace
             }
             return false;
         }
+
+        public void Guard(bool _active)
+        {
+            if (isGround == false) return; // 점프 중에는 사용불가
+
+            if (_active == true && isGuard == false)
+            {
+                isGuard = _active;
+                //가드 올릴때 애니메이션 추가 ㄱㄱ
+            }
+            else if (_active == false && isGuard == true)
+            {
+                isGuard = _active;
+                //가드 내릴때 애니메이션 추가 ㄱㄱ
+            }
+        }
+
         public override bool Attack(float _atk)
         {
             Collider[] colls = Physics.OverlapBox(new Vector3(transform.position.x + (attackArea.z / 2) * Mathf.Sin(this.transform.eulerAngles.y * Mathf.Deg2Rad), transform.position.y, this.transform.position.z + (attackArea.z / 2) * Mathf.Cos(this.transform.eulerAngles.y * Mathf.Deg2Rad)), attackArea / 2, this.transform.rotation, LayerMask.GetMask("Monster"), QueryTriggerInteraction.UseGlobal);
@@ -126,8 +146,15 @@ namespace EntitySpace
                 GroundCheck();
             }
         }
+
+        public bool IsGuard()
+        {
+            return isGuard;
+        }
+
         public override float Damaged(float _damage)
         {
+            
             if (invincibleCurr < invincibleCool) return -1.0f;
             entityStatus.Hp -= _damage;
 
@@ -139,7 +166,7 @@ namespace EntitySpace
             else
             {
                 invincibleCurr = 0.0f;
-                return (int)entityStatus.Hp;
+                return entityStatus.Hp;
             }
         }
         public override bool Destroyed()

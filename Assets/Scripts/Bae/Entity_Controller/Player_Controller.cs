@@ -25,6 +25,7 @@ namespace EntitySpace
             InputMove();
             InputJump();
             InputAttack();
+            InputGuard();
         }
         // 플레이어 입력 설정
 
@@ -54,7 +55,6 @@ namespace EntitySpace
         protected float attackCurr;
         private void InputAttack()
         {
-
             if (Input.GetButton("Fire1") && attackCurr >= attackCool)
             {
                 Debug.Log("AttackButton");
@@ -66,6 +66,10 @@ namespace EntitySpace
                 attackCurr += Time.deltaTime;
             }
         }
+
+        private void InputGuard()
+        {
+            entityPlayer.Guard(Input.GetButton("Fire3"));
+        }
     }
 }
-
