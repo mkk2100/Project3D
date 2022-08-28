@@ -26,6 +26,8 @@ public class TitleMenu : Title
         credit.text = creditText;
         pressEnterToStart.text = pressEnterToStartText;
         load.text = loadText;
+        // AudioManager.instance.BGMPlay1(AudioManager.instance.BGMLibrary[0], true);
+        // AudioManager.instance.BGMPlay2(AudioManager.instance.BGMLibrary[1], true, 0);        
     }
 
 
