@@ -7,6 +7,16 @@ public class TitleMenu : Title
 {
     public static TitleState titleState;
 
+    [Header("GameObjects")]
+    public GameObject titleTextGameObject;
+    public GameObject creditTextGameObject;
+    public GameObject loadingTextGameObject;
+
+    [Header("Load Text")]
+    public CanvasGroup canvasGroup;
+
+    private const float EFFECTDELAY = 0.01f;
+
     private void Start()
     {
         titleState = TitleState.PressEnterToStartState;
@@ -15,47 +25,70 @@ public class TitleMenu : Title
         exitGameButton.text = exitGameButtonText;
         credit.text = creditText;
         pressEnterToStart.text = pressEnterToStartText;
+        load.text = loadText;
     }
 
-    public void ChangeState(int idx)
-    {
-        for(int i = 0; i < transform.childCount; i++)
-        {
-            transform.GetChild(i).gameObject.SetActive(i == idx);
-        }        
-    }
 
     private void Update()
     {
         switch(titleState)
         {
             case TitleState.PressEnterToStartState:
-                EnablePressEnterToStartState(0);
+                ChangeState(0);
                 break;
             case TitleState.SelectButtonState:
-                EnableSelectButtonState(1);
+                ChangeState(1);
                 break;
-            case TitleState.TutorialState:
-                EnableTutorialState(2);
+            case TitleState.NoneState:
+                UnenableAllState();
                 break;
+
         }
     }
 
-    private void EnablePressEnterToStartState(int idx)
+    private void ChangeState(int idx)
     {
         for(int i = 0; i < transform.childCount; i++)
         transform.GetChild(i).gameObject.SetActive(i == idx);
     }
 
-    private void EnableSelectButtonState(int idx)
+    private void UnenableAllState()
     {
         for(int i = 0; i < transform.childCount; i++)
-        transform.GetChild(i).gameObject.SetActive(i == idx);
+        transform.GetChild(i).gameObject.SetActive(false);
     }
 
-    private void EnableTutorialState(int idx)
+    // Start Buttons
+    public void StartGameButton()
     {
-        for(int i = 0; i < transform.childCount; i++)
-        transform.GetChild(i).gameObject.SetActive(i == idx);
+        titleTextGameObject.SetActive(false);
+        creditTextGameObject.SetActive(false);
+        LoadLoadingText();
+        titleState = TitleState.NoneState;
+        StartCoroutine(ShowsLoadingText());
+    }
+
+    public void ExitGameButton()
+    {
+        Invoke("QuitGame", 1.0f);
+    }
+
+    private void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    private void LoadLoadingText()
+    {
+        loadingTextGameObject.SetActive(true);
+    }
+
+    IEnumerator ShowsLoadingText()
+    {
+        while(canvasGroup.alpha <= 1)
+        {
+            canvasGroup.alpha += EFFECTDELAY;
+            yield return new WaitForEndOfFrame();
+        }        
     }
 }
