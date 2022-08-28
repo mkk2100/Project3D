@@ -12,6 +12,7 @@ public class TitleSelectButton : MonoBehaviour
 //    private Vector3 startPos;
     private Vector3 movePos;
     private bool isArrowKeyPressed;
+    private bool isQuit;
 
     public GameObject[] buttons;
     public RectTransform[] buttonRects;
@@ -28,6 +29,7 @@ public class TitleSelectButton : MonoBehaviour
 
     private void Update()
     {
+        if(isQuit) return;
         if(Input.GetAxisRaw("Horizontal") != 0  && !isArrowKeyPressed)
         {
             isArrowKeyPressed = true;
@@ -75,12 +77,14 @@ public class TitleSelectButton : MonoBehaviour
     public void StartGameButton()
     {
         EventSystem.current.SetSelectedGameObject(null);
-        AudioManager.instance.SFXPlay("Start ", AudioManager.instance.SFXLibrary[0]);        
+        AudioManager.instance.SFXPlay("Start ", AudioManager.instance.SFXLibrary[0]);
     }
     
     // For Button
     public void ExitGameButton()
     {
+        isQuit = true;
+        EventSystem.current.SetSelectedGameObject(null);
         AudioManager.instance.SFXPlay("Exit ", AudioManager.instance.SFXLibrary[2]);
     }
 }
