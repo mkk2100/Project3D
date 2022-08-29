@@ -47,7 +47,10 @@ public class Camera_Controller : MonoBehaviour
         if (Physics.Raycast(target, (pos - target).normalized, out ray, Vector3.Distance(target, pos)))
         {
             if (ray.transform.gameObject.layer == LayerMask.NameToLayer("Wall") || ray.transform.gameObject.layer == LayerMask.NameToLayer("Ground"))
+            {
                 pos = ray.point;
+            }
+                
         }
 
     }
