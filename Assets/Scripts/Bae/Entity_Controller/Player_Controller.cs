@@ -11,6 +11,7 @@ namespace EntitySpace
 {
     public class Player_Controller : MonoBehaviour
     {
+        private bool jumpKeyDown;
         Entity_Player entityPlayer;
         Entity_Status entity_Status;
         
@@ -24,8 +25,13 @@ namespace EntitySpace
         {
             InputMove();
             InputJump();
+            //JumpCheck();
             InputAttack();
             InputGuard();
+        }
+        private void Update() 
+        {
+            //InputJump();
         }
         // 플레이어 입력 설정
 
@@ -46,7 +52,27 @@ namespace EntitySpace
         // 점프 조작
         private void InputJump()
         {
-            if (Input.GetKey(KeyCode.Space)) entityPlayer.Jump();
+            //jumpKeyDown = (Input.GetKeyDown(KeyCode.Space)) ? true : false;
+            
+            if (Input.GetKey(KeyCode.Space) && jumpKeyDown == false) 
+            {
+                jumpKeyDown = true;
+                entityPlayer.Jump();
+            }
+            else if (Input.GetKey(KeyCode.Space) == false)
+            {
+                jumpKeyDown = false;
+            }
+            
+        }
+
+        private void JumpCheck()
+        {
+            if(jumpKeyDown)
+            {
+                entityPlayer.Jump();
+                Debug.Log("Jumped");
+            }
         }
 
         // 공격 조작

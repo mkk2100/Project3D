@@ -26,7 +26,10 @@ public class Camera_Controller : MonoBehaviour
         try
         {
             if (target == null) return;
+
+
             target = EntitySpace.Entity_Player.entity_Player.transform.position + new Vector3(0, 2, 0);
+            // target = new Vector3(target.x, (int)target.y, target.z);
 
             pos = target + Vector3.forward * -radius;
         }
@@ -35,8 +38,8 @@ public class Camera_Controller : MonoBehaviour
             Debug.Log("Camera_Contoller.cs : Player Not Found");
             return;
         }
-        mouseX += Input.GetAxis("Mouse X");
-        mouseY = Mathf.Clamp(mouseY += Input.GetAxis("Mouse Y") / 2, -0.5f, 1.35f);
+        mouseX += Input.GetAxis("Mouse X") / 10;
+        mouseY = Mathf.Clamp(mouseY += Input.GetAxis("Mouse Y") / 20, -0.5f, 1.35f);
 
         pos = new Vector3(target.x + radius * Mathf.Sin(mouseX) * Mathf.Cos(mouseY), target.y + radius * Mathf.Sin(mouseY), target.z + radius * Mathf.Cos(mouseX) * Mathf.Cos(mouseY));
 
