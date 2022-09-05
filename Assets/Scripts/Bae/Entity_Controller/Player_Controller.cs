@@ -5,12 +5,16 @@ using UnityEngine;
 
 /* 
  * 플레이어 조작 스크립트
- * 기본적으로 최대한 입력받고 수치를 entity 스크립트로 넘기는 역할만 하도록 하였음
+ * 수치를 entity 스크립트로 넘기는 역할 위주로 수행
  */
 namespace EntitySpace
 {
     public class Player_Controller : MonoBehaviour
     {
+
+        [SerializeField]
+        bool doNotControl;
+
         private bool jumpKeyDown;
         Entity_Player entityPlayer;
         Entity_Status entity_Status;
@@ -23,9 +27,10 @@ namespace EntitySpace
         }
         void FixedUpdate()
         {
+            if (doNotControl == true || entityPlayer.IsDead == true) return;
+
             InputMove();
             InputJump();
-            //JumpCheck();
             InputAttack();
             InputGuard();
         }
@@ -84,7 +89,7 @@ namespace EntitySpace
             if (Input.GetButton("Fire1") && attackCurr >= attackCool)
             {
                 Debug.Log("AttackButton");
-                bool attackChk = entityPlayer.Attack();
+                entityPlayer.Attack();
                 attackCurr = 0.0f;
             }
             if (attackCurr <= attackCool)

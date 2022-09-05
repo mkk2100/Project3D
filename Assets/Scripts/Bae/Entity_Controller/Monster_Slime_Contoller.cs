@@ -22,8 +22,15 @@ namespace EntitySpace
         float xDir;
         float zDir;
 
+        float attackDist = 1.0f;
+        float attackAddDeg = 25.0f;
+        float detectDist = 8.0f;
+        float detectAddDeg = 25.0f;
+
 
         bool findPlayer = false;
+
+        float waitRandomMove; // 랜덤한 시간만큼 이동하도록 하는 float 변수
 
         private void Awake()
         {
@@ -40,14 +47,13 @@ namespace EntitySpace
         }
 
 
-        //플레이어 발견 못헀을때 아무 방향으로나 이동함
-        float waitRandomMove; // 랜덤한 시간만큼 이동하도록 하는 float 변수
-
+        
         private void Action()
         {
             if (findPlayer == false && waitRandomMove <= 0)
             {
-                findPlayer = FindPlayer(detectDist, detectMinus);
+                if (myEntity.entityStatus.FullHp > myEntity.entityStatus.Hp) findPlayer = true;
+                findPlayer = FindPlayer(detectDist, detectAddDeg);
                 RandomMove();
             }
             else if (findPlayer == true)
@@ -89,13 +95,9 @@ namespace EntitySpace
             waitRandomMove = Random.Range(1.5f, 5.0f); 
         }
 
-        float attackDist = 1.0f;
-        float attackMinus = 25.0f;
-        float detectDist = 8.0f;
-        float detectMinus = 25.0f;
-
+        
         // 플레이어를 감지, 처음 플레이어 추적, 공격거리 감지에 사용
-        private bool FindPlayer(float _dist, float _degreeMinus)
+        private bool FindPlayer(float _dist, float _degreeAdd)
         {
             Collider[] colls;
 
@@ -105,7 +107,7 @@ namespace EntitySpace
                 if (co.gameObject.CompareTag("Player"))
                 {
                     float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    dot -= Mathf.Deg2Rad * _degreeMinus;
+                    dot += Mathf.Deg2Rad * _degreeAdd;
                     if (dot > 0)
                     {
                         entity_Player = co.GetComponent<Entity_Player>();
@@ -129,91 +131,53 @@ namespace EntitySpace
 
             xDir = tempVec.x;
             zDir = tempVec.z;
-                                
-            Attack();
+                             
+            if(attackCool < attackCurr) Attack();
             myEntity.Move();
             return true;
 
         }
 
-        bool Attack() 
+        void Attack() 
         {
-            if(myEntity.Attack() == true)
-            {
-                attackCurr = attackCool;
-                return true;
-            }
-
-            return false;
+            myEntity.Attack();
+            attackCurr = attackCool;
         }
 
-        // 씬화면에서 보이는 기즈모 디버깅용, 인스펙터에서 디버그모드 bool 켜야 보임
+
+        // 씬화면에서 보이는 기즈모 보이게 만드는용도, 인스펙터에서 디버그모드 bool 켜야 작동됨, 성능이 나쁘기 때문에 평소엔 꺼둘것
         [SerializeField]
         private bool DebugMod;
-        private bool debugFound;
-        private bool debugAttack;
+        enum DebugState
+        {
+            Noraml,
+            Found
+        }
+        DebugState debugState = DebugState.Noraml;
+
         private void GetDebug()
         {
-            Collider[] colls;
-            Collider[] colls2;
-            colls = Physics.OverlapSphere(transform.position, detectDist);
-            colls2 = Physics.OverlapSphere(transform.position, attackDist);
-            foreach (Collider co in colls)
-            {
-                if (co.gameObject.CompareTag("Player"))
-                {
-                    float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    Debug.Log(dot);
-                    dot -= Mathf.Deg2Rad * detectMinus;
-                    if (dot > 0)
-                    {
-                        debugFound = true;
-                    }
-                }
-            }
-            foreach (Collider co in colls2)
-            {
-                if (co.gameObject.CompareTag("Player"))
-                {
-                    float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    Debug.Log(dot);
-                    dot -= Mathf.Deg2Rad * attackMinus;
-                    if (dot > 0)
-                    {
-                        debugAttack = true;
-                    }
-                }
-            }
-
+            bool find = FindPlayer(detectDist, detectAddDeg);
+            if (find == true && debugState == DebugState.Noraml) debugState = DebugState.Found;
+            else if (find == false && debugState == DebugState.Found) debugState = DebugState.Noraml;
         }
-        
         // 기즈모 그리기
         private void OnDrawGizmos()
         {
             if (DebugMod == false) return;
-
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, attackDist);
-
-            Gizmos.color = Color.white;
+            Gizmos.color = Color.white; // 플레이어 감지범위
             Gizmos.DrawWireSphere(transform.position, detectDist);
 
+            if (entity_Player == null) return;
 
-            if (debugAttack == true)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(transform.position, Entity_Player.entity_Player.transform.position);
-                debugAttack = false;
-                return;
-            }
-            if (debugFound == true)
+            if (debugState == DebugState.Found)
             {
                 Gizmos.color = Color.blue;
                 Gizmos.DrawLine(transform.position, Entity_Player.entity_Player.transform.position);
-                debugFound = false;
                 return;
             }
-            
+
+
         }
     }
 

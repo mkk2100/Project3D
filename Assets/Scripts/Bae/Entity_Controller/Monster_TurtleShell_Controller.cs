@@ -5,65 +5,116 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /*
- * 터틀쉘의 AI 스크립트, 어떤 행동을 할지 판단하여 entity 스크립트로 값을 넘기는 역할만 수행하도록 함. 실질적인 동작은 entity 스크립트에서 수행
+ * 터틀쉘의 AI 스크립트.
+ * entity 스크립트로 어떤 동작을 수행하는지 지시하는 역할을 수행.
+ * 실질적인 동작은 entity 스크립트에서 수행한다.
  */
 
 namespace EntitySpace
 {
-    public class Monster_TurtleShell_Contoller : MonoBehaviour
+    public class Monster_TurtleShell_Controller : MonoBehaviour
     {
+
         Entity_Player entity_Player;
-        Entity_Monster_Slime myEntity;
+        Entity_Monster_TurtleShell myEntity;
 
-        protected float attackCool = 1.0f;
-        [SerializeField]
-        protected float attackCurr = 1.0f;
+        protected float attackCurr; // 공격의 쿨타임
+        readonly protected float attackCool = 1.0f;
 
+        protected float rushReadyCurr; // 러쉬전 약간의 선딜레이를 위한 변수
+        readonly protected float rushReadySet = 3.0f;
+
+        /*
+         * 이 시간이 0이 되면 러쉬가 작동함. 
+         * 플레이어와 본인과의 거리에 비례하여 더 멀리 떨어질수록 빠르게 감소되며 플레이어를 공격해도 조금씩 감소함
+         */
+        protected float rushTimer;
+        readonly protected float rushTimerSet = 40.0f;
+
+        //회전 방향
         float xDir;
         float zDir;
 
+        enum MyState // 현재 어떤 상태인지를 나타내는 열거형
+        {
+            Normal,
+            Trace,
+            RushReady,
+            Rush
+        }
 
-        bool findPlayer = false;
+        MyState myState;
+
+        /*
+         * 공격 거리와 각도, 플레이어 감지 거리, 전방에서 180도 + AddDeg만큼 감지
+         */
+        float attackDist = 1.0f;
+        float attackAddDeg = -25.0f;
+        float detectDist = 8.0f;
+        float detectAddDeg = 180.0f;
+
+        void Initialize()
+        {
+            xDir = 0;
+            zDir = 0;
+            attackCurr = attackCool;
+            rushReadyCurr = rushReadySet;
+            rushTimer = rushTimerSet;
+            myState = MyState.Normal;
+        }
 
         private void Awake()
         {
-            myEntity = GetComponent<Entity_Monster_Slime>();
+            Initialize();
+            myEntity = GetComponent<Entity_Monster_TurtleShell>();
         }
         void Update()
         {
-            if (myEntity.isDead == true) return;
-
             if (DebugMod == true) GetDebug();
-
+            StateSet();
             timer();
-            Action();
         }
-
-
-        //플레이어 발견 못헀을때 아무 방향으로나 이동함
-        float waitRandomMove; // 랜덤한 시간만큼 이동하도록 하는 float 변수
-
-        private void Action()
+        void StateSet()
         {
-            if (findPlayer == false && waitRandomMove <= 0)
+            switch (myState)
             {
-                findPlayer = FindPlayer(detectDist, detectMinus);
-                RandomMove();
+                case MyState.Normal:
+                    DirSet(ref xDir, ref zDir);
+                    Move();
+                    if (FindPlayer(detectDist, detectAddDeg) == true) myState = MyState.Trace;
+                    if (myEntity.entityStatus.FullHp > myEntity.entityStatus.Hp) myState = MyState.Trace;
+                    break;
+                case MyState.Trace:
+                    DirSet(ref xDir, ref zDir);
+                    Move();
+                    Attack();
+                    if (rushTimer <= 0) // 러쉬타이머가 다되면 러쉬준비
+                    {
+                        rushReadyCurr = rushReadySet;
+                        myState = MyState.RushReady;
+                    }
+                    break;
+                case MyState.RushReady:
+                    if (rushReadyCurr <= 0) // 러쉬전 딜레이 시간동안 대기
+                    {
+                        myState = MyState.Rush;
+                        rushReadyCurr = rushReadySet;
+                        rushTimer = rushTimerSet;
+                        myEntity.SetRushDir((entity_Player.transform.position - this.transform.position).normalized);
+                    }
+                    break;
+                case MyState.Rush:
+                    if (myEntity.RushAttack() <= 0)
+                    {
+                        myState = MyState.Trace; // 러쉬를 끝마치면 다시 추적태세로 변환
+                        rushTimer = rushTimerSet;
+                    }
+                    break;
             }
-            else if (findPlayer == true)
-            {
-                TracePlayer();
-            }
-
-            if (entity_Player == null) myEntity.Move(0.1f);
-            else myEntity.Move();
-
-            myEntity.Rotation(xDir, zDir);
         }
-
         void timer()
         {
-            if (waitRandomMove > 0)
+            if (waitRandomMove >= 0)
             {
                 waitRandomMove -= Time.deltaTime;
             }
@@ -72,30 +123,22 @@ namespace EntitySpace
             {
                 attackCurr += Time.deltaTime;
             }
+
+            if (rushReadyCurr >= 0 && myState == MyState.RushReady)
+            {
+                rushReadyCurr -= Time.deltaTime;
+            }
+
+            if (rushTimer >= 0 && myState == MyState.Trace && entity_Player != null)
+            {
+                rushTimer -= Time.deltaTime * Vector3.Distance(entity_Player.transform.position, this.transform.position);
+            }
         }
 
-        void RandomMove()
-        {
-            if (Random.Range(0, 2) == 0)
-            {
-                xDir = 0;
-                zDir = 0;
-            }
-            else
-            {
-                xDir = Random.Range(-1f, 1f);
-                zDir = Random.Range(-1f, 1f);
-            }
-            waitRandomMove = Random.Range(1.5f, 5.0f);
-        }
-
-        float attackDist = 1.0f;
-        float attackMinus = 25.0f;
-        float detectDist = 8.0f;
-        float detectMinus = 25.0f;
-
+        //플레이어 발견 못헀을때 아무 방향으로나 이동함
+        
         // 플레이어를 감지, 처음 플레이어 추적, 공격거리 감지에 사용
-        private bool FindPlayer(float _dist, float _degreeMinus)
+        private bool FindPlayer(float _dist, float _degreeAdd)
         {
             Collider[] colls;
 
@@ -105,7 +148,7 @@ namespace EntitySpace
                 if (co.gameObject.CompareTag("Player"))
                 {
                     float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    dot -= Mathf.Deg2Rad * _degreeMinus;
+                    dot += Mathf.Deg2Rad * _degreeAdd;
                     if (dot > 0)
                     {
                         entity_Player = co.GetComponent<Entity_Player>();
@@ -116,125 +159,96 @@ namespace EntitySpace
             return false;
         }
 
+        private void Move()
+        {
+            if (myState != MyState.Rush && myState != MyState.RushReady) // 돌진상태가 아니면 계속해서 이동, 회전함
+            {
+                myEntity.Rotation(xDir, zDir);
+                if (entity_Player == null) myEntity.Move(0.5f); // 플레이어를 발견하지 못했으면 느린 속도로 이동
+                else myEntity.Move();
+            }
+        }
         // 플레이어를 발견후 추적 및 공격
 
-        bool TracePlayer()
+        float waitRandomMove; // 랜덤한 시간만큼 이동하도록 하는 float 변수
+        void DirSet(ref float _xDir, ref float _zDir)
         {
-            if (entity_Player == null || findPlayer == false)
+            if(myState == MyState.Normal) // 랜덤방향
             {
-                return false;
+                if (waitRandomMove > 0) return;
+
+                else
+                {
+                    _xDir = Random.Range(-1f, 1f);
+                    _zDir = Random.Range(-1f, 1f);
+                }
+                waitRandomMove = Random.Range(0.5f, 3.0f);
             }
-
-            Vector3 tempVec = ((entity_Player.transform.position - this.transform.position).normalized);
-
-            xDir = tempVec.x;
-            zDir = tempVec.z;
-
-            if(attackCount < 3)
+            if(myState == MyState.Trace) // 플레이어 추적
             {
-                Attack();
-            }
-            else
-            {
-                RushAttack();
-            }
-            myEntity.Move();
-            return true;
 
+                if (entity_Player == null) return;
+
+                Vector3 tempVec = ((entity_Player.transform.position - this.transform.position).normalized);
+
+                _xDir = tempVec.x;
+                _zDir = tempVec.z;
+            }
+        }
+        
+        void Attack()
+        {
+            if (entity_Player == null || myState != MyState.Trace || attackCool >= attackCurr) return;
+
+            if (myEntity.Attack() == 1)
+            {
+                rushTimer -= 5.0f;
+                attackCurr = 0;
+            }
         }
 
-        int attackCount = 0;
-        bool Attack()
-        {
-            if (myEntity.Attack() == true)
-            {
-                attackCount += 1;
-                attackCurr = attackCool;
-                return true;
-            }
-
-            return false;
-        }
-
-        bool RushAttack()
-        {
-            attackCount = 0;
-
-            // 플레이어 위치 - 자신의 위치로 지속이동
-            // 벽에 닿으면 반사각을 구해서 반사
-            // 총 5회 반사되면 패턴중지
-
-            return true;
-        }
-
-        // 씬화면에서 보이는 기즈모 디버깅용, 인스펙터에서 디버그모드 bool 켜야 보임
+        // 씬화면에서 보이는 기즈모 보이게 만드는용도, 인스펙터에서 디버그모드 bool 켜야 작동됨, 성능이 나쁘기 때문에 평소엔 꺼둘것
         [SerializeField]
         private bool DebugMod;
-        private bool debugFound;
-        private bool debugAttack;
+        enum DebugState
+        {
+            Noraml,
+            Found,
+            RushReady,
+        }
+        DebugState debugState = DebugState.Noraml;
+
         private void GetDebug()
         {
-            Collider[] colls;
-            Collider[] colls2;
-            colls = Physics.OverlapSphere(transform.position, detectDist);
-            colls2 = Physics.OverlapSphere(transform.position, attackDist);
-            foreach (Collider co in colls)
-            {
-                if (co.gameObject.CompareTag("Player"))
-                {
-                    float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    Debug.Log(dot);
-                    dot -= Mathf.Deg2Rad * detectMinus;
-                    if (dot > 0)
-                    {
-                        debugFound = true;
-                    }
-                }
-            }
-            foreach (Collider co in colls2)
-            {
-                if (co.gameObject.CompareTag("Player"))
-                {
-                    float dot = Vector3.Dot(this.gameObject.transform.forward, (co.gameObject.transform.position - this.transform.position).normalized);
-                    Debug.Log(dot);
-                    dot -= Mathf.Deg2Rad * attackMinus;
-                    if (dot > 0)
-                    {
-                        debugAttack = true;
-                    }
-                }
-            }
+            bool find = FindPlayer(detectDist, detectAddDeg);
+            if (find == true && debugState == DebugState.Noraml) debugState = DebugState.Found;
+            else if (find == false && debugState == DebugState.Found) debugState = DebugState.Noraml;
 
+            if (myState == MyState.RushReady) debugState = DebugState.RushReady;
+            else if (debugState == DebugState.RushReady) debugState = DebugState.Noraml;
         }
-
         // 기즈모 그리기
         private void OnDrawGizmos()
         {
             if (DebugMod == false) return;
-
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, attackDist);
-
-            Gizmos.color = Color.white;
+            Gizmos.color = Color.white; // 플레이어 감지범위
             Gizmos.DrawWireSphere(transform.position, detectDist);
 
+            if (entity_Player == null) return;
 
-            if (debugAttack == true)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(transform.position, Entity_Player.entity_Player.transform.position);
-                debugAttack = false;
-                return;
-            }
-            if (debugFound == true)
+            if (debugState == DebugState.Found)
             {
                 Gizmos.color = Color.blue;
                 Gizmos.DrawLine(transform.position, Entity_Player.entity_Player.transform.position);
-                debugFound = false;
+                return;
+            }
+            if (debugState == DebugState.RushReady)
+            {
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(transform.position, Entity_Player.entity_Player.transform.position);
                 return;
             }
 
         }
     }
-
 }

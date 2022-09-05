@@ -13,30 +13,29 @@ namespace EntitySpace
         [SerializeField]
         public Entity_Status entityStatus;
 
-        public bool Move()
+        public void Move()
         {
-            return Move(entityStatus.Speed);
+            Move(entityStatus.Speed);
         }
-        public abstract bool Move(float _speed);
-        public abstract bool Rotation(float _x, float _z);
-        public bool Jump()
+        public abstract void Move(float _speed);
+        public abstract void Rotation(float _x, float _z);
+        public void Jump()
         {
-            return Jump(entityStatus.JumpForce);
+            Jump(entityStatus.JumpForce);
         }
-        public abstract bool Jump(float _jumpForce);
+        public abstract void Jump(float _jumpForce);
 
-        public bool Attack()
+        public int Attack()
         {
             return Attack(entityStatus.Atk);
         }
-        public abstract bool Attack(float _atk);
+        public abstract int Attack(float _atk);
 
-        public virtual bool Destroyed()
+        public virtual void Destroyed()
         {
             Destroy(this.gameObject);
-            return true;
         }
-        public abstract float Damaged(float _damage);
+        public abstract void Damaged(float _damage);
     }
 
 }

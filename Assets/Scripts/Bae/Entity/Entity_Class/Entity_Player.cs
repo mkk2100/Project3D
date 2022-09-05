@@ -8,23 +8,52 @@ namespace EntitySpace
 {
     public class Entity_Player : Entity_Base
     {
-        public static Entity_Player entity_Player;
-
         Animator animator;
         Rigidbody rigidbody;
         CapsuleCollider capColi;
-        protected float angle;
-        protected float turnSpeed;
+
+        // 활성화시 데미지를 받지 않음
+        [SerializeField]
+        bool godMode = false;
+        // 플레이어 싱글턴화
+        public static Entity_Player entity_Player;
         protected Vector3 attackArea = new Vector3(1.5f, 1.5f, 1.5f);
-
+        // 땅에 붙어있는지 여부(점프 관련)
         private bool isGround;
-        bool isDead;
-
-        protected float invincibleCool = 1.0f;
+        // 방어중인지
+        bool isGuard = false;
+        public bool IsGuard
+        {
+            get 
+            {
+                return isGuard;
+            }
+        }
+        // 사망했는지
+        bool isDead = false;
+        public bool IsDead
+        {
+            get
+            {
+                return isDead;
+            }
+        }
+        // 1회 공격받은 후 이 시간동안은 플레이어가 공격을 받지 않음, 연속공격을 받고 순식간에 죽어버리는 것 방지하기 위함
+        readonly protected float invincibleCool = 1.0f;
         [SerializeField]
         protected float invincibleCurr = 1.0f;
 
-        bool isGuard = false;
+        void ComponentGet()
+        {
+            animator = GetComponent<Animator>();
+            rigidbody = GetComponent<Rigidbody>();
+            capColi = GetComponent<CapsuleCollider>();
+        }
+        void Initalize()
+        {
+            entityStatus = new Entity_Status(10, 1.5f, 3, 300);
+        }
+
         private void Awake()
         {
             if (entity_Player == null)
@@ -36,63 +65,57 @@ namespace EntitySpace
                 Destroy(this);
                 return;
             }
-            
-            turnSpeed = 10;
-            entityStatus = new Entity_Status(3, 1.5f, 3, 300);
-            animator = GetComponent<Animator>();
-            rigidbody = GetComponent<Rigidbody>();
-            capColi = GetComponent<CapsuleCollider>();
+
+            ComponentGet();
+            Initalize();
         }
 
         private void Update()
         {
-            invincibleTime();
+            InvincibleTime();
         }
 
-        // ??? ??????
-        public override bool Move(float _speed)
+        public override void Move(float _speed)
         {
-            if (isGuard == true) return false; // 가드중이면 이동불가
+            if (isGuard == true) return; // 가드중이면 이동불가
 
             if (_speed == 0.0f) // 0을 전달받았으면 애니메이션 끄고 이동 X
             {
                 animator.SetBool("isWalking", false);
-                return false;
+                return;
             }
-
             transform.position += transform.forward * _speed * Time.deltaTime;
             animator.SetBool("isWalking", true);
 
-            return true;
+            return;
         }
 
-        private void invincibleTime()
+        //피격 후 1초간의 무적시간 함수
+        private void InvincibleTime()
         {
             if(invincibleCool > invincibleCurr)
             {
                 invincibleCurr += Time.deltaTime;
             }
         }
-        public override bool Rotation(float _x, float _z)
+        // 입력받은 각도로 서서히 회전함
+        public override void Rotation(float _x, float _z)
         {
-            angle = Mathf.Atan2(_x, _z);   
+            float turnSpeed = 10;
+            float angle = Mathf.Atan2(_x, _z);
             angle = (Mathf.Rad2Deg * angle);
             Quaternion targetRotation = Quaternion.Euler(0, Camera.main.transform.rotation.eulerAngles.y + angle, 0);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation , turnSpeed * Time.deltaTime);
-
-            return true;
         }
-        public override bool Jump(float _jumpForce)
-        {
-            Debug.Log("Jump?");
+       
+        public override void Jump(float _jumpForce)
+        {            
             if (isGround == true)
             {
                 rigidbody.velocity = new Vector2(rigidbody.velocity.x, 0);
                 rigidbody.velocity = Vector3.zero;
                 rigidbody.AddForce(Vector3.up * _jumpForce);
-                return true;
             }
-            return false;
         }
 
         public void Guard(bool _active)
@@ -111,20 +134,21 @@ namespace EntitySpace
             }
         }
 
-        public override bool Attack(float _atk)
+        public override int Attack(float _atk)
         {
             Collider[] colls = Physics.OverlapBox(new Vector3(transform.position.x + (attackArea.z / 2) * Mathf.Sin(this.transform.eulerAngles.y * Mathf.Deg2Rad), transform.position.y, this.transform.position.z + (attackArea.z / 2) * Mathf.Cos(this.transform.eulerAngles.y * Mathf.Deg2Rad)), attackArea / 2, this.transform.rotation, LayerMask.GetMask("Monster"), QueryTriggerInteraction.UseGlobal);
             if(colls.Length > 0)
             {
                 foreach (Collider co in colls)
                 {
-                    float enemyHp = co.GetComponent<Entity_Monster>().Damaged(entityStatus.Atk);
-                    Debug.Log(enemyHp);
+                    co.GetComponent<Entity_Monster>().Damaged(entityStatus.Atk);
                 }
-                return true;
+                return 1;
             }
-            Debug.Log("Target Lost");
-            return false;
+            else
+            {
+                return 0;
+            }
         }
         private void GroundCheck()
         {
@@ -147,33 +171,27 @@ namespace EntitySpace
             }
         }
 
-        public bool IsGuard()
-        {
-            return isGuard;
-        }
 
-        public override float Damaged(float _damage)
+        public override void Damaged(float _damage)
         {
-            
-            if (invincibleCurr < invincibleCool) return -1.0f;
+            if (godMode == true) return;
+
+            if (invincibleCurr < invincibleCool) return;
             entityStatus.Hp -= _damage;
 
             if (entityStatus.Hp <= 0)
             {
                 Destroyed();
-                return 0;
             }
-            else
+            else // 무적시간 초기화
             {
                 invincibleCurr = 0.0f;
-                return entityStatus.Hp;
             }
         }
-        public override bool Destroyed()
+        public override void Destroyed()
         {
             isDead = true;
-            Destroy(gameObject);
-            return true;
+            Destroy(gameObject); // 오브젝트 파괴대신 사망 애니메이션 등 넣으면 괜찮을듯
         }
 
         private void OnCollisionExit(Collision collision)

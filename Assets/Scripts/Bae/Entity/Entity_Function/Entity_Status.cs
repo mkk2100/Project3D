@@ -4,7 +4,7 @@ using UnityEngine;
 
 //Write by baejinseok
 
-// ¿£ÅÍÆ¼µéÀÇ °øÅë ½ºÅ×ÀÌÅÍ½º Å¬·¡½º
+// ì—”í„°í‹°ë“¤ì˜ ê³µí†µ ìŠ¤í…Œì´í„°ìŠ¤ í´ë˜ìŠ¤
 namespace EntitySpace
 {
     [System.Serializable]
@@ -13,11 +13,14 @@ namespace EntitySpace
         [SerializeField]
         public Entity_Status(float _hp, float _atk, float _speed, float _jumpForce)
         {
+            fullhp = _hp; 
             hp = _hp;
             atk = _atk;
             speed = _speed;
             jumpForce = _jumpForce;
         }
+        [SerializeField]
+        private float fullhp;
         [SerializeField]
         private float hp;
         [SerializeField]
@@ -27,6 +30,11 @@ namespace EntitySpace
         [SerializeField]
         private float jumpForce;
 
+        public float FullHp
+        {
+            get { return hp; }
+            set { hp = value; }
+        }
         public float Hp
         {
             get { return hp; }
@@ -48,6 +56,4 @@ namespace EntitySpace
             set { jumpForce = value; }
         }
     }
-
-
 }
