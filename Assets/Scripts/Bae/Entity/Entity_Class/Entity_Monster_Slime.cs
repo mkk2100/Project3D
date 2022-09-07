@@ -26,8 +26,7 @@ namespace EntitySpace
 
         void Initialize()
         {
-            turnSpeed = 10;
-            entityStatus = new Entity_Status(3, 1, 0.25f, 100);
+            turnSpeed = 10;            
         }
 
         private void Awake()

@@ -36,9 +36,7 @@ namespace EntitySpace
         */
         bool hitWall = false;
 
-        [SerializeField]
         float minX = 0;
-        [SerializeField]
         float maxX = 0;
         float minZ = 0;
         float maxZ = 0;

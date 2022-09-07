@@ -296,7 +296,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d357a802e5ef4d44d829d89dfb1a341c, type: 2}
+  - {fileID: 2100000, guid: ea56236067aa6a84398c6b658ffca5e1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -387,7 +387,7 @@ GameObject:
   - component: {fileID: -2453973604313163259}
   - component: {fileID: -4232288059415762111}
   m_Layer: 7
-  m_Name: SlimePBR
+  m_Name: SlimePBR2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -441,10 +441,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entityStatus:
-    fullhp: 3
-    hp: 3
+    fullhp: 5
+    hp: 5
     atk: 1
-    speed: 0.25
+    speed: 0.5
     jumpForce: 100
   isDead: 0
 --- !u!114 &3183341547349803746
